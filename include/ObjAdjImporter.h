@@ -217,6 +217,9 @@ namespace util
                 while (str >> symbol)
                     tokens.push_back(symbol);
 
+                if (tokens.empty())
+                    continue;
+
                 if (tokens[0] == "v")
                 {
                     if ((tokens.size() < 4) || (tokens.size() > 7))
