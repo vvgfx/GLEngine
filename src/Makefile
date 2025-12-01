@@ -1,7 +1,7 @@
 # Original objects plus ImGui
 OBJS = RenderingEngine.o View.o Controller.o Model.o GUIView.o GUIController.o
 
-INCLUDES = -I../include -I../include/Imgui -I../include/Imgui/backends
+INCLUDES = -I../include -I../include/imgui -I../include/imgui/backends
 LIBS = -L../lib
 LDFLAGS = -lglad -lglfw3 -lstb_image -limgui
 CFLAGS = -g -std=c++11
@@ -14,6 +14,10 @@ ifeq ($(OS),Windows_NT)     # is Windows_NT on XP, 2000, 7, Vista, 10...
 else ifeq ($(shell uname -s),Darwin)     # is MACOSX
     LDFLAGS += -framework Cocoa -framework OpenGL -framework IOKit
 	COMPILER = clang++
+else
+    LIBS = -L../lib_linux
+    LDFLAGS += -lGL
+	COMPILER = g++
 endif
 
 Rendering_Engine: $(OBJS)

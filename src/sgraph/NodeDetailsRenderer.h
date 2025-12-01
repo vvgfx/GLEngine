@@ -23,7 +23,7 @@
 #include <ShaderLocationsVault.h>
 #include "ObjectInstance.h"
 #include "Light.h"
-#include "Imgui.h"
+#include "imgui.h"
 #include <stack>
 #include <iostream>
 using namespace std;

@@ -6,7 +6,7 @@
 #include "../../Tasks/TransferTextureTask.h"
 #include "../PPMImageLoader.h"
 #include "../STBImageLoader.h"
-#include "Ijob.h"
+#include "IJob.h"
 using namespace std;
 
 namespace job

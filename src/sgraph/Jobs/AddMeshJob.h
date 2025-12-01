@@ -4,7 +4,7 @@
 #include <string>
 #include "../../Model.h"
 #include "../../Tasks/AddMeshTask.h"
-#include "Ijob.h"
+#include "IJob.h"
 #include "../../GUICallbacks.h"
 #include <fstream>
 #include <ObjAdjImporter.h>

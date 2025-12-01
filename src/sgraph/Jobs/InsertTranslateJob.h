@@ -4,7 +4,7 @@
 #include <string>
 #include "../../Model.h"
 #include "../Commands/InsertTranslateCommand.h"
-#include "Ijob.h"
+#include "IJob.h"
 using namespace std;
 
 namespace job

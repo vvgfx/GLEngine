@@ -33,7 +33,7 @@ using namespace std;
 #include "Camera/AngleCamera.h"
 #include "Camera/DynamicCamera.h"
 
-// Imgui required files.
+// imgui required files.
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
