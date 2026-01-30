@@ -5,3 +5,6 @@ Assignments/*
 src/imgui.ini
 archives/*
 src/Rendering_Engine
+build
+.cache
+src/bin/Rendering_Engine

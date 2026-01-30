@@ -54,6 +54,94 @@ It also uses the visitor pattern for the scenegraph, which made it easy to imple
 
 (This is not exhaustive)
 
+### Build and run:
+
+- Clone repo
+- replace lglad and lglfw3 with your own compiled libraries. (will update this later to autocompile and build!)
+- Install cmake-tools on vscode (easiest):
+    - using codelldb extension with vscode (I prefer this):
+        - launch.json (linux):
+        ```json
+        {
+            "version": "0.2.0",
+            "configurations": [
+                {
+                    "name": "Debug",
+                    "type": "lldb",
+                    "request": "launch",
+                    "program": "${command:cmake.launchTargetPath}",
+                    "args": [],
+                    "cwd": "${workspaceFolder}",
+                    "preLaunchTask": "CMake: build",
+                    "env": {
+                        "__NV_PRIME_RENDER_OFFLOAD": "1",
+                        "__GLX_VENDOR_LIBRARY_NAME": "nvidia" // or amd here.
+                    }
+                }
+            ]
+        }
+        ```
+        - launch.json (windows):
+        ```json
+        {
+            "version": "0.2.0",
+            "configurations": [
+                {
+                    "name": "Debug",
+                    "type": "lldb",
+                    "request": "launch",
+                    "program": "${command:cmake.launchTargetPath}",
+                    "args": [],
+                    "cwd": "${workspaceFolder}",
+                    "preLaunchTask": "CMake: build"
+                }
+            ]
+        }
+        ```
+        - tasks.json:
+        ```json
+        {
+            "version": "2.0.0",
+            "tasks": [
+                {
+                    "type": "cmake",
+                    "label": "CMake: build",
+                    "command": "build",
+                    "targets": ["all"],
+                    "problemMatcher": []
+                }
+            ]
+        }
+        ```
+    - Run with F5
+    - alternative: use cmake tools' run feature.
+        - install a cppdbg extension
+        - make sure environment is set with nvidia/amd gpu.
+            - rqeuired cmake config in settings.json:
+            ```json
+            "cmake.debugConfig": {
+                "cwd": "${workspaceFolder}",
+                "environment": [ // remove this key for windows.
+                    {"name": "__NV_PRIME_RENDER_OFFLOAD", "value": "1"},
+                    {"name": "__GLX_VENDOR_LIBRARY_NAME", "value": "nvidia"} // or amd here
+                ],
+                "setupCommands": [
+                    {
+                        "text": "-enable-pretty-printing",
+                        "description": "Enable pretty printing",
+                        "ignoreFailures": true
+                    }
+                ]
+            }
+            ```
+        - run program from the extension.
+- Directly run through terminal: either use cmake (recommended) or run make on terminal(not updated anymore)
+    -   ```sh
+        mkdir build; cd build; cmake ..; cd ..
+        ```
+- ./bin/Rendering_Engine <filename> (It is important that the parent folder is the cwd if you want the default scene to run)
+    - to force nvidia gpu on linux (Required to run GI): __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia ./bin/Rendering_Engine
+
 ### Requirements:
 
 - OpenGL 4.5+
