@@ -39,7 +39,7 @@ void GUIController::initScenegraph() {
     //read in the file of commands
     ifstream inFile;
     if(textfile == "")
-        inFile = ifstream("scenegraphmodels/GI-scene.txt");
+        inFile = ifstream("scenegraphmodels/test-export-2.txt");
     else
         inFile = ifstream(textfile);
     sgraph::ScenegraphImporter importer;
