@@ -2,6 +2,7 @@
 #define _IPIPELINE_H_
 
 #include <glm/glm.hpp>
+#include <TextureImage.h>
 #include "../sgraph/IScenegraph.h"
 using namespace std;
 

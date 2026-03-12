@@ -2,6 +2,7 @@
 #define __PPM_IMAGELOADER_H_
 
 #include "ImageLoader.h"
+#include <fstream>
 #include <stdexcept>
 #include <iostream>
 #include <sstream>

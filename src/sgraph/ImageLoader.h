@@ -1,6 +1,9 @@
 #ifndef __IMAGELOADER_H_
 #define __IMAGELOADER_H_
 
+#include <glad/glad.h>
+#include <string>
+using namespace std;
 
 namespace sgraph
 {

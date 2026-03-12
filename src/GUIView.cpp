@@ -315,7 +315,7 @@ void GUIView::GUIScenegraph(sgraph::IScenegraph *scenegraph)
     ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x / 6 , ImGui::GetIO().DisplaySize.y - 16), ImGuiCond_Always);
     ImGui::Begin("Node Details");
     if(selectedNode)
-    selectedNode->accept(NodeRenderer);
+        selectedNode->accept(NodeRenderer);
 
     // These are for the popups. At any point, I expect only one at most to have a popup
     ImGui::End();

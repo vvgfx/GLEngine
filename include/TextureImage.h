@@ -2,6 +2,10 @@
 #define _TEXTUREIMAGE_H_
 
 #include <glad/glad.h>
+#include <glm/glm.hpp>
+#include <string>
+
+using namespace std;
 
 
 namespace util

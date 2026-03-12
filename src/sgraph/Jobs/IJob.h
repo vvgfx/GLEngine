@@ -15,6 +15,7 @@ namespace job {
  */
     class IJob {
         public:
+        virtual ~IJob() {}
 
         /**
          * This should do any sort of processing required in a parallel thread, and once done,

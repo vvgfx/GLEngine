@@ -4,6 +4,8 @@
 
 #include <glm/glm.hpp>
 #include "IVertexData.h"
+#include "PolygonMesh.h"
+#include "VertexAttrib.h"
 #include "SGNode.h"
 
 

@@ -10,6 +10,7 @@
 #include "ScaleTransform.h"
 #include "TranslateTransform.h"
 #include "DynamicTransform.h"
+#include "SRTNode.h"
 #include "PPMImageLoader.h"
 #include "STBImageLoader.h"
 #include "PolygonMesh.h"
@@ -18,6 +19,7 @@
 #include "TextureImage.h"
 #include "ObjAdjImporter.h"
 #include <istream>
+#include <fstream>
 #include <map>
 #include <string>
 #include <iostream>

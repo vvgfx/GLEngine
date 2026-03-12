@@ -1,9 +1,15 @@
 #ifndef _ABSTRACT_PIPELINE_H_
 #define _ABSTRACT_PIPELINE_H_
 
+#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <stack>
+#include <map>
+#include <ObjectInstance.h>
+#include <ShaderProgram.h>
+#include <ShaderLocationsVault.h>
 #include "../sgraph/IScenegraph.h"
 #include "IPipeline.h"
 using namespace std;

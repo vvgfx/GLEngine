@@ -2,6 +2,9 @@
 #define ___LIGHT_H___
 
 #include "glm/glm.hpp"
+#include <string>
+
+using namespace std;
 
 namespace util
 {

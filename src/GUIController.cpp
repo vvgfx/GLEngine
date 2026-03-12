@@ -188,7 +188,7 @@ void GUIController::onCursorMove(double newXPos, double newYPos)
     float deltaX = newXPos - oldXPos;
     float deltaY = newYPos - oldYPos;
     if(!(mousePressed && ( deltaX != 0 || deltaY != 0)))
-    return;
+        return;
     reinterpret_cast<GUIView*>(view)->rotateCamera(deltaX, deltaY);
 }
 
