@@ -18,6 +18,7 @@
 #include "../sgraph/TexturedPBRRenderer.h"
 #include "../sgraph/LightRetriever.h"
 #include "TangentComputer.h"
+#include "glad/glad.h"
 
 namespace pipeline
 {
@@ -38,7 +39,9 @@ namespace pipeline
 
     private:
         util::ShaderProgram shaderProgram;
+        util::ShaderProgram hdrShaderProgram;
         util::ShaderLocationsVault shaderLocations;
+        util::ShaderLocationsVault hdrShaderLocations;
         sgraph::SGNodeVisitor *renderer;
         sgraph::SGNodeVisitor *lightRetriever;
         map<string, unsigned int>* textureIdMap;
@@ -49,6 +52,7 @@ namespace pipeline
         bool initialized = false;
         int frames;
         double time;
+        unsigned int hdrFBO, hdrColorBuffer, hdrDepthStencilBuffer;
 
         map<string, string> shaderVarsToVertexAttribs;
     };
@@ -61,6 +65,14 @@ namespace pipeline
         shaderProgram.enable();
         shaderLocations = shaderProgram.getAllShaderVariables();
         shaderProgram.disable();
+
+
+        hdrShaderProgram.createProgram( "shaders/postprocessing/hdr.vert",
+                                        "shaders/postprocessing/hdr.frag");
+
+        hdrShaderProgram.enable();
+        hdrShaderLocations = hdrShaderProgram.getAllShaderVariables();
+        hdrShaderProgram.disable();
 
         // Mapping of shader variables to vertex attributes
         shaderVarsToVertexAttribs["vPosition"] = "position";
@@ -81,6 +93,42 @@ namespace pipeline
         }
         renderer = new sgraph::TexturedPBRRenderer(modelview, objects, shaderLocations, *textureIdMap);
         lightRetriever = new sgraph::LightRetriever(modelview);
+
+        GLint viewport[4];
+        glGetIntegerv(GL_VIEWPORT, viewport);
+
+        glGenFramebuffers(1, &hdrFBO);
+
+        glGenTextures(1, &hdrColorBuffer);
+        glBindTexture(GL_TEXTURE_2D, hdrColorBuffer);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, viewport[2], viewport[3], 0, GL_RGBA, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        // depth render buffer.
+        glGenRenderbuffers(1, &hdrDepthStencilBuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, hdrDepthStencilBuffer);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, viewport[2], viewport[3]); // marks this as a depth render buffer
+
+
+        glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, hdrColorBuffer, 0); // sets color texture as color attachment
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, hdrDepthStencilBuffer); // sets depth render buffer as depth attachment
+
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        glBindRenderbuffer(GL_RENDERBUFFER, hdrDepthStencilBuffer);
+        GLint fmt;
+        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_INTERNAL_FORMAT, &fmt);
+
+        if(fmt == GL_DEPTH_COMPONENT32)
+            std::cout<<"depth buffer format is correct! \n";
+
+        if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            throw runtime_error("custom framebuffer is not complete!");
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         initialized = true;
     }
 
@@ -96,6 +144,10 @@ namespace pipeline
     {
         if (!initialized)
             throw runtime_error("pipeline has not been initialized.");
+
+
+        glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+        
         // can't pass the view vec3 directly so doing this.
         glm::mat4 inverseView = glm::inverse(viewMat);
         cameraPos = glm::vec3(inverseView[3]);
@@ -137,10 +189,27 @@ namespace pipeline
 
         if(cubeMapLoaded)
             drawCubeMap(viewMat);
-        // cout<<"Errors: "<<glGetError()<<endl;
+
         modelview.pop();
-        glFlush();
         shaderProgram.disable();
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        hdrShaderProgram.enable();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, hdrColorBuffer);
+        glUniform1i(hdrShaderLocations.getLocation("hdrColorBuffer"), 0);
+        // set exposure here later.
+        float exposure = 1.0f;
+        glUniform1f(hdrShaderLocations.getLocation("exposure"), exposure);
+        glDisable(GL_DEPTH_TEST); // not sure why this is needed?
+        // draw screen space quad
+        objects["postProcess"]->draw();
+        hdrShaderProgram.disable();
+
+        
+        glFlush();
     }
 
     void TexturedPBRPipeline::initLights(sgraph::IScenegraph *scenegraph)
