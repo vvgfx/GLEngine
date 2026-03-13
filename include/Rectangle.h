@@ -1,9 +1,9 @@
 #ifndef __RECTANGLE_H__
 #define __RECTANGLE_H__
 
+#include <glad/glad.h>
 #include "VertexAttrib.h"
 #include <PolygonMesh.h>
-#include <GLFW/glfw3.h>
 
 class Rectangle: public util::PolygonMesh<VertexAttrib> {
     public:

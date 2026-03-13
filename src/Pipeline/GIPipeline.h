@@ -4,9 +4,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <GLFW/glfw3.h>
 #include <iostream>
 #include "AbstractPipeline.h"
+#include <GLFW/glfw3.h>
 #include "../sgraph/IScenegraph.h"
 #include <ShaderProgram.h>
 #include <ShaderGeoProgram.h>
@@ -24,6 +24,7 @@
 #include "../sgraph/VoxelDebugRenderer.h"
 #include "../sgraph/LightRetriever.h"
 #include "TangentComputer.h"
+#include "glad/glad.h"
 
 namespace pipeline
 {

@@ -1,12 +1,15 @@
 #ifndef _OBJADJIMPORTER_H_
 #define _OBJADJIMPORTER_H_
 
+#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <fstream>
+#include <sstream>
 #include <vector>
 #include <algorithm>
 #include <map>
+#include "PolygonMesh.h"
 using namespace std;
 
 namespace util

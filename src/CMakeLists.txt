@@ -21,6 +21,9 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     -Wall -Wextra -Wno-unused-parameter
 )
 
+# Prevent GLFW from pulling in system GL headers (glad provides them)
+target_compile_definitions(${PROJECT_NAME} PRIVATE GLFW_INCLUDE_NONE)
+
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}
     ../include

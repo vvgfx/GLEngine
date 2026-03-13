@@ -1,9 +1,6 @@
 #ifndef __VIEW_H__
 #define __VIEW_H__
 
-#ifndef GLFW_INCLUDE_NONE
-#define GLFW_INCLUDE_NONE
-#endif
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <cstdio>
