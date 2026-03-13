@@ -1,0 +1,34 @@
+#version 460 core
+
+// Resolve pass: unpack r32ui atomic voxels into rgba16f for cone tracing.
+// The uint packing layout from voxelize.frag is:
+//   [luminance:8 | blue:8 | green:8 | red:8]
+// Luminance byte is discarded (it was only used for atomicMax sorting).
+
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+layout(binding = 0, r32ui)  restrict readonly  uniform uimage3D ImgSource; // packed uint voxels
+layout(binding = 1, rgba16f) restrict writeonly uniform image3D  ImgDest;   // resolved float voxels
+
+void main()
+{
+    ivec3 coord = ivec3(gl_GlobalInvocationID);
+
+    // bounds check
+    if (any(greaterThanEqual(coord, imageSize(ImgSource))))
+        return;
+
+    uint packedColor = imageLoad(ImgSource, coord).r;
+
+    vec4 color = vec4(0.0);
+    if (packedColor != 0u)
+    {
+        float r = float( packedColor        & 0xFFu) / 255.0;
+        float g = float((packedColor >> 8u)  & 0xFFu) / 255.0;
+        float b = float((packedColor >> 16u) & 0xFFu) / 255.0;
+        // top byte is luminance — discard it, alpha = 1.0 for occupied voxels
+        color = vec4(r, g, b, 1.0);
+    }
+
+    imageStore(ImgDest, coord, color);
+}

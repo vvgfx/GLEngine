@@ -1,8 +1,7 @@
 #version 460
 
-#extension GL_NV_gpu_shader5 : enable
-#extension GL_NV_shader_atomic_fp16_vector : require
-
+// AMD-compatible voxelization: pack color into uint, use standard imageAtomicMax.
+// Replaces NVIDIA-specific GL_NV_gpu_shader5 / GL_NV_shader_atomic_fp16_vector.
 
 in passThroughData {
     vec4 worldPos;
@@ -22,16 +21,15 @@ uniform int numLights;
 const int MAXLIGHTS = 10;
 uniform LightProperties light[MAXLIGHTS];
 
-layout(binding = 0, rgba16f) restrict uniform image3D ImgResult;
+layout(binding = 0, r32ui) restrict uniform uimage3D ImgResult;
 
 uniform sampler2D albedoMap;
-// uniform sampler2D metallicMap;
-// uniform sampler2D roughnessMap;
 
 uniform vec4 gridMin;
 uniform vec4 gridMax;
 
 ivec3 worldToVoxelSpace(vec3 worldPos);
+uint packColorToUint(vec3 color);
 
 
 void main()
@@ -72,16 +70,12 @@ void main()
         Lo += lightContribution;
     }
 
-    // vec3 ambient = vec3(0.03f) * albedo;
-    // vec3 color = ambient + Lo;
-
     vec3 color = Lo;
 
     // convert to voxel space here!
     ivec3 voxelPos = worldToVoxelSpace(fPosition.xyz);
-    imageAtomicMax(ImgResult, voxelPos, f16vec4(color , 1.0));
-    // imageAtomicMax(ImgResult, voxelPos, f16vec4(1.0, 1.0, 1.0, 1.0));
-
+    uint packedColor = packColorToUint(color);
+    imageAtomicMax(ImgResult, voxelPos, packedColor);
 }
 
 ivec3 worldToVoxelSpace(vec3 worldPos)
@@ -89,4 +83,19 @@ ivec3 worldToVoxelSpace(vec3 worldPos)
     vec3 uvw = (worldPos - gridMin.xyz) / (gridMax.xyz - gridMin.xyz);
     ivec3 voxelPos = ivec3(uvw * imageSize(ImgResult));
     return voxelPos;
+}
+
+// Pack color into a uint for atomic comparison.
+// Luminance is placed in the MSB so that imageAtomicMax naturally
+// selects the brightest contributing fragment.
+// Layout: [luminance:8 | blue:8 | green:8 | red:8]
+uint packColorToUint(vec3 color)
+{
+    color = clamp(color, 0.0, 1.0);
+    float luminance = dot(color, vec3(0.2126, 0.7152, 0.0722));
+    uint r = uint(color.r * 255.0);
+    uint g = uint(color.g * 255.0);
+    uint b = uint(color.b * 255.0);
+    uint l = uint(luminance * 255.0);
+    return (l << 24u) | (b << 16u) | (g << 8u) | r;
 }

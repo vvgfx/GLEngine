@@ -53,6 +53,7 @@ namespace pipeline
         util::ShaderGeoProgram voxelProgram;
         util::ShaderProgram voxelDebugProgram;
         util::ComputeProgram mipmapProgram;
+        util::ComputeProgram resolveProgram;
         util::ShaderProgram depthProgram;
         util::ShaderLocationsVault shaderLocations;
         util::ShaderLocationsVault voxelShaderLocations;
@@ -73,7 +74,7 @@ namespace pipeline
         bool initialized = false, nvidiaGPU = false;
         int frames, voxelResolution;
         double time;
-        unsigned int voxelImage, voxelFBO;
+        unsigned int voxelImage, voxelAtomicImage, voxelFBO;
         map<string, string> shaderVarsToVertexAttribs;
 
         int giStatus = 1;
@@ -111,6 +112,8 @@ namespace pipeline
         mipmapProgram.enable();
         mipmapShaderLocations = mipmapProgram.getAllShaderVariables();
         mipmapProgram.disable();
+
+        resolveProgram.createProgram("shaders/VXGI/voxelize/voxelResolve.comp");
 
         depthProgram.createProgram(string("shaders/shadow/depth.vert"),
                                    string("shaders/shadow/depth.frag"));
@@ -157,6 +160,12 @@ namespace pipeline
         glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
+        // r32ui 3D texture for atomic voxelization (single mip level)
+        glGenTextures(1, &voxelAtomicImage);
+        glBindTexture(GL_TEXTURE_3D, voxelAtomicImage);
+        glTexStorage3D(GL_TEXTURE_3D, 1, GL_R32UI, voxelResolution, voxelResolution, voxelResolution);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         // empty framebuffer for voxelization
         glGenFramebuffers(1, &voxelFBO);
@@ -208,19 +217,28 @@ namespace pipeline
             
             voxelProgram.enable();
             sendLightDetails(true);
-            glBindImageTexture(0, voxelImage, 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA16F); // cannot use shaderLocations for binding!
+            glBindImageTexture(0, voxelAtomicImage, 0, GL_TRUE, 0, GL_READ_WRITE, GL_R32UI);
             glUniform4fv(voxelShaderLocations.getLocation("gridMin"), 1, glm::value_ptr(gridMin));
             glUniform4fv(voxelShaderLocations.getLocation("gridMax"), 1, glm::value_ptr(gridMax));
             scenegraph->getRoot()->accept(voxelRenderer);
             voxelProgram.disable();
 
-            // trying this out to see if I can force the incoherent memory write to work.
+            // resolve: unpack r32ui atomic voxels into rgba16f for cone tracing
+            glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+            resolveProgram.enable();
+            glBindImageTexture(0, voxelAtomicImage, 0, GL_TRUE, 0, GL_READ_ONLY, GL_R32UI);
+            glBindImageTexture(1, voxelImage, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+            {
+                int groups = (voxelResolution + 3) / 4;
+                glDispatchCompute(groups, groups, groups);
+            }
+            resolveProgram.disable();
+
             glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | 
                    GL_TEXTURE_FETCH_BARRIER_BIT);
             
             // mipmap
             glBindTexture(GL_TEXTURE_3D, voxelImage);
-            // glGenerateMipmap(GL_TEXTURE_3D); // need to figure out a way to do this without tanking performance!
             createMipmap();
         }
 
@@ -317,8 +335,8 @@ namespace pipeline
 
     void GIPipeline::clearVoxelImage() 
     {
-        static const GLfloat clearColor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-        glClearTexImage(voxelImage, 0, GL_RGBA, GL_FLOAT, clearColor);
+        static const GLuint clearVal = 0u;
+        glClearTexImage(voxelAtomicImage, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, &clearVal);
     }
 
     void GIPipeline::createMipmap()
