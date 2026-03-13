@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <stack>
 #include <map>
+#include <iostream>
 #include <ObjectInstance.h>
 #include <ShaderProgram.h>
 #include <ShaderLocationsVault.h>
@@ -26,6 +27,15 @@ namespace pipeline
         public:
         virtual ~AbstractPipeline() {}
 
+        /**
+         * Check if a named object (mesh) exists and is non-null.
+         * Use this before accessing objects[] to avoid nullptr dereference.
+         */
+        bool hasObject(const string& name) const
+        {
+            auto it = objects.find(name);
+            return it != objects.end() && it->second != nullptr;
+        }
         virtual void updateProjection(glm::mat4& newProjection)
         {
             projection = glm::mat4(newProjection);
@@ -44,6 +54,13 @@ namespace pipeline
             glUniform1i(cubeMapShaderLocations.getLocation("skybox"), 1);
 
             glDepthFunc(GL_LEQUAL);
+            if (!hasObject("skybox")) {
+                cerr << "Warning: 'skybox' mesh not found, skipping cubemap draw." << endl;
+                modelview.pop();
+                cubeMapProgram.disable();
+                glDepthMask(GL_TRUE);
+                return;
+            }
             objects["skybox"]->draw();
 
             modelview.pop();

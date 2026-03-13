@@ -70,7 +70,7 @@ add-child ground-leaf ground-scale
 #Add walls
 group walls walls
 translate wall-1-translate wall-1-translate 0 0 22
-import wall-1 scenegraphmodels/big-ben-wall.txt
+import wall-1 scenegraphmodels/classic/big-ben-wall.txt
 add-child wall-1 wall-1-translate
 add-child wall-1-translate walls
 add-child walls root
@@ -83,9 +83,9 @@ translate wall-4-translate wall-4-translate -22 0 0
 rotate wall-2-rotate wall-2-rotate 90 0 1 0
 rotate wall-4-rotate wall-4-rotate -90 0 1 0
 
-import wall-2 scenegraphmodels/big-ben-wall.txt
-import wall-3 scenegraphmodels/big-ben-wall.txt
-import wall-4 scenegraphmodels/big-ben-wall.txt
+import wall-2 scenegraphmodels/classic/big-ben-wall.txt
+import wall-3 scenegraphmodels/classic/big-ben-wall.txt
+import wall-4 scenegraphmodels/classic/big-ben-wall.txt
 
 
 add-child wall-2 wall-2-rotate
@@ -111,8 +111,8 @@ add-child cone-1-scale cone-1-translate
 add-child cone-1-translate walls
 
 
-import human-1 scenegraphmodels/humanoid-commands.txt
-import human-2 scenegraphmodels/humanoid-commands.txt
+import human-1 scenegraphmodels/classic/humanoid-commands.txt
+import human-2 scenegraphmodels/classic/humanoid-commands.txt
 translate human-1-translate human-1-translate 60 0 60
 translate human-2-translate human-2-translate 90 0 60
 scale s-human-1 s-human-1 80 80 80
@@ -130,7 +130,7 @@ add-child root base-translate
 
 
 #Adding the drone to the world
-import drone scenegraphmodels/drone.txt
+import drone scenegraphmodels/classic/drone.txt
 
 
 dynamic drone-movement drone-movement

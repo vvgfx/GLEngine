@@ -30,7 +30,7 @@ void Controller::initScenegraph() {
     //read in the file of commands
     ifstream inFile;
     if(textfile == "")
-        inFile = ifstream("scenegraphmodels/texture-pbr-shadow-volume-test.txt");
+        inFile = ifstream("scenegraphmodels/textured-pbr/texture-pbr-shadow-volume-test.txt");
     else
         inFile = ifstream(textfile);
     sgraph::ScenegraphImporter importer;

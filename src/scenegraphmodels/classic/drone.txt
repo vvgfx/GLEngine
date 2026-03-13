@@ -29,10 +29,10 @@ end-material
 
 
 group propellers propellers
-import propeller-1 scenegraphmodels/propeller.txt
-import propeller-2 scenegraphmodels/propeller.txt
-import propeller-3 scenegraphmodels/propeller.txt
-import propeller-4 scenegraphmodels/propeller.txt
+import propeller-1 scenegraphmodels/classic/propeller.txt
+import propeller-2 scenegraphmodels/classic/propeller.txt
+import propeller-3 scenegraphmodels/classic/propeller.txt
+import propeller-4 scenegraphmodels/classic/propeller.txt
 
 
 #need to rotate the propellers by 0 so that the time function in view can use these fake rotations to rotate with time
@@ -111,8 +111,8 @@ add-child camera-translate drone
 #Now add the stands for the drone
 
 
-import drone-legs-1 scenegraphmodels/drone-legs.txt
-import drone-legs-2 scenegraphmodels/drone-legs.txt
+import drone-legs-1 scenegraphmodels/classic/drone-legs.txt
+import drone-legs-2 scenegraphmodels/classic/drone-legs.txt
 
 translate drone-legs-right-translate drone-legs-right-translate 10 0 0
 translate drone-legs-left-translate drone-legs-left-translate -10 0 0

@@ -39,7 +39,7 @@ void GUIController::initScenegraph() {
     //read in the file of commands
     ifstream inFile;
     if(textfile == "")
-        inFile = ifstream("scenegraphmodels/test-export-2.txt");
+        inFile = ifstream("scenegraphmodels/textured-pbr/test-export-2.txt");
     else
         inFile = ifstream(textfile);
     sgraph::ScenegraphImporter importer;
@@ -126,7 +126,7 @@ void GUIController::onkey(int key, int scancode, int action, int mods)
                 reinterpret_cast<GUIView*>(view)->rotateCamera(-1.0f, 0.0f);
                 break;
             case GLFW_KEY_0:
-                    saveScene("scenegraphmodels/test-export.txt");
+                    saveScene("scenegraphmodels/textured-pbr/test-export.txt");
                 break;
             case GLFW_KEY_G:
                     reinterpret_cast<GUIView*>(view)->guiSwitch();

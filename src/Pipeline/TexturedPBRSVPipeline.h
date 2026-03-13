@@ -81,7 +81,7 @@ namespace pipeline
         map<string, string> shaderVarsToVertexAttribs;
 
         // hdr stuff
-        unsigned int hdrFBO, hdrColorBuffer, hdrDepthBuffer, hdrStencilBuffer;
+        unsigned int hdrFBO, hdrColorBuffer, hdrDepthStencilBuffer;
 
         unsigned int quadVAO = 0;
         unsigned int quadVBO;
@@ -171,21 +171,15 @@ namespace pipeline
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        // depth render buffer.
-        glGenRenderbuffers(1, &hdrDepthBuffer);
-        glBindRenderbuffer(GL_RENDERBUFFER, hdrDepthBuffer);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, viewport[2], viewport[3]); // marks this as a depth render buffer
-
-        // stencil buffer
-        glGenRenderbuffers(1, &hdrStencilBuffer);
-        glBindRenderbuffer(GL_RENDERBUFFER, hdrStencilBuffer);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, viewport[2], viewport[3]);
+        // combined depth+stencil render buffer
+        glGenRenderbuffers(1, &hdrDepthStencilBuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, hdrDepthStencilBuffer);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, viewport[2], viewport[3]);
 
         // attach to custom framebuffer now.
         glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, hdrColorBuffer, 0); // sets color texture as color attachment
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, hdrDepthBuffer); // sets depth render buffer as depth attachment
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, hdrStencilBuffer); // stencil buffer
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, hdrDepthStencilBuffer);
         if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             throw runtime_error("custom framebuffer is not complete!");
         
@@ -258,7 +252,10 @@ namespace pipeline
         glUniform1f(hdrShaderLocations.getLocation("exposure"), exposure);
         glDisable(GL_DEPTH_TEST); // not sure why this is needed?
         // draw screen space quad
-        objects["postProcess"]->draw();
+        if (hasObject("postProcess"))
+            objects["postProcess"]->draw();
+        else
+            cerr << "Warning: 'postProcess' mesh not found, skipping HDR tone-mapping pass." << endl;
         hdrShaderProgram.disable();
 
     }
@@ -392,7 +389,7 @@ namespace pipeline
         glGetIntegerv(GL_VIEWPORT, viewport);
 
         glDeleteTextures(1, &hdrColorBuffer);
-        glDeleteRenderbuffers(1, &hdrDepthBuffer);
+        glDeleteRenderbuffers(1, &hdrDepthStencilBuffer);
 
 
         glGenTextures(1, &hdrColorBuffer);
@@ -401,18 +398,13 @@ namespace pipeline
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        glGenRenderbuffers(1, &hdrDepthBuffer);
-        glBindRenderbuffer(GL_RENDERBUFFER, hdrDepthBuffer);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, viewport[2], viewport[3]);
-
-        glGenRenderbuffers(1, &hdrStencilBuffer);
-        glBindRenderbuffer(GL_RENDERBUFFER, hdrStencilBuffer);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, viewport[2], viewport[3]);
+        glGenRenderbuffers(1, &hdrDepthStencilBuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, hdrDepthStencilBuffer);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, viewport[2], viewport[3]);
         
         glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, hdrColorBuffer, 0); // sets color texture as color attachment
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, hdrDepthBuffer); // sets depth render buffer as depth attachment
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, hdrStencilBuffer); // stencil buffer
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, hdrDepthStencilBuffer);
         if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             throw runtime_error("Resized framebuffer is not complete!");
         
