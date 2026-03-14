@@ -124,14 +124,6 @@ namespace pipeline
             return;
         }
         cout<<"Loading HDR cubemap"<<endl;
-        if (!hasObject("hdr-skybox")) {
-            cerr << "Warning: 'hdr-skybox' mesh not found, skipping HDR IBL setup." << endl;
-            return;
-        }
-        if (!hasObject("postProcess")) {
-            cerr << "Warning: 'postProcess' mesh not found, skipping HDR IBL setup (needed for BRDF LUT)." << endl;
-            return;
-        }
         hdrCubemap = true;
         // draw the cubemap and save to memory.
         glEnable(GL_DEPTH_TEST);
@@ -383,8 +375,7 @@ namespace pipeline
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
         glUniform1i(hdrSkyboxShaderLocations.getLocation("environmentMap"), 0);
-        if (hasObject("hdr-skybox"))
-            objects["hdr-skybox"]->draw();
+        objects["hdr-skybox"]->draw();
         hdrSkyboxShaderProgram.disable();
     }
 

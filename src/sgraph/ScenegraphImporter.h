@@ -2,6 +2,7 @@
 #define _SCENEGRAPHIMPORTER_H_
 
 #include "IScenegraph.h"
+#include "ObjImporter.h"
 #include "Scenegraph.h"
 #include "GroupNode.h"
 #include "LeafNode.h"
@@ -37,6 +38,11 @@ namespace sgraph {
                 string inputWithOutCommentsString = stripComments(input);
                 istringstream inputWithOutComments(inputWithOutCommentsString);
                 IScenegraph *scenegraph = new Scenegraph();
+
+                // Always load default utility meshes (postProcess quad, skybox, hdr-skybox)
+                // so that pipelines don't need every scene file to declare them.
+                loadDefaultMeshes();
+
                 while (inputWithOutComments >> command) {
                     cout << "Read " << command << endl;
                     if (command == "instance") {
@@ -168,6 +174,35 @@ namespace sgraph {
                 return this->cubeMapPaths;
             }
             protected:
+
+                void loadDefaultMeshes()
+                {
+                    // These meshes are required by various pipelines but shouldn't
+                    // need to be declared in every scene file.
+                    struct DefaultMesh { const char* name; const char* path; };
+                    DefaultMesh defaults[] = {
+                        { "postProcess", "models/post-process.obj" },
+                        { "skybox",      "models/skybox.obj" },
+                        { "hdr-skybox",  "models/hdr-skybox.obj" },
+                    };
+                    for (const auto& def : defaults) 
+                    {
+                        if (meshes.find(def.name) != meshes.end())
+                            continue; // already loaded (e.g. from a recursive import)
+                        ifstream in(def.path);
+                        if (in.is_open()) 
+                        {
+                            util::PolygonMesh<VertexAttrib> mesh = util::ObjImporter<VertexAttrib>::importFile(in, false);
+                            meshes[def.name] = mesh;
+                            meshPaths[def.name] = def.path;
+                        } 
+                        else 
+                        {
+                            cerr << "Warning: default mesh '" << def.name
+                                 << "' not found at " << def.path << endl;
+                        }
+                    }
+                }
 
                 virtual void parseTexture(istream& input)
                 {

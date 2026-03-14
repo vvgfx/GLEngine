@@ -252,10 +252,7 @@ namespace pipeline
         glUniform1f(hdrShaderLocations.getLocation("exposure"), exposure);
         glDisable(GL_DEPTH_TEST); // not sure why this is needed?
         // draw screen space quad
-        if (hasObject("postProcess"))
-            objects["postProcess"]->draw();
-        else
-            cerr << "Warning: 'postProcess' mesh not found, skipping HDR tone-mapping pass." << endl;
+        objects["postProcess"]->draw();
         hdrShaderProgram.disable();
 
     }

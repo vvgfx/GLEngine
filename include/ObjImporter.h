@@ -1,10 +1,13 @@
 #ifndef _OBJIMPORTER_H_
 #define _OBJIMPORTER_H_
 
+#include "PolygonMesh.h"
+#include "glad/glad.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <fstream>
 #include <vector>
+#include <map>
 using namespace std;
 
 namespace util
@@ -287,45 +290,77 @@ public:
             }
         }
 
+        // Build unique vertices from face specifications
+        struct VertexKey {
+            int posIndex, texIndex, normalIndex;
+            bool operator<(const VertexKey& o) const {
+                if (posIndex != o.posIndex) return posIndex < o.posIndex;
+                if (texIndex != o.texIndex) return texIndex < o.texIndex;
+                return normalIndex < o.normalIndex;
+            }
+        };
+
+        map<VertexKey, unsigned int> vertexMap;
+        vector<VertexKey> uniqueVertices;
+        vector<unsigned int> remappedTriangles;
+
+        for (i = 0; i < triangles.size(); i++)
+        {
+            VertexKey key;
+            key.posIndex = triangles[i];
+            key.texIndex = (i < triangle_texture_indices.size()) ? triangle_texture_indices[i] : -1;
+            key.normalIndex = (i < triangle_normal_indices.size()) ? triangle_normal_indices[i] : -1;
+
+            if (vertexMap.find(key) == vertexMap.end())
+            {
+                vertexMap[key] = uniqueVertices.size();
+                uniqueVertices.push_back(key);
+            }
+            remappedTriangles.push_back(vertexMap[key]);
+        }
+
         vector<K> vertexData;
         vector<float> data;
-        for (i=0;i<vertices.size();i++) {
+        for (i = 0; i < uniqueVertices.size(); i++)
+        {
             K v;
-			
-			data.clear();
-			data.push_back(vertices[i].x);
-			data.push_back(vertices[i].y);
-			data.push_back(vertices[i].z);
-			data.push_back(vertices[i].w);
-			
-            v.setData("position",data);
-            if (texcoords.size()==vertices.size())
+            const VertexKey& key = uniqueVertices[i];
+
+            data.clear();
+            data.push_back(vertices[key.posIndex].x);
+            data.push_back(vertices[key.posIndex].y);
+            data.push_back(vertices[key.posIndex].z);
+            data.push_back(vertices[key.posIndex].w);
+            v.setData("position", data);
+
+            if (key.texIndex >= 0 && key.texIndex < texcoords.size())
             {
-				data.clear();
-				data.push_back(texcoords[i].x);
-				data.push_back(texcoords[i].y);
-				data.push_back(texcoords[i].z);
-				data.push_back(texcoords[i].w);
-				v.setData("texcoord",data);
-			}    
-            if (normals.size()==vertices.size())
-			{
-				data.clear();
-				data.push_back(normals[i].x);
-				data.push_back(normals[i].y);
-				data.push_back(normals[i].z);
-				data.push_back(normals[i].w);
-				v.setData("normal",data);
-			}
+                data.clear();
+                data.push_back(texcoords[key.texIndex].x);
+                data.push_back(texcoords[key.texIndex].y);
+                data.push_back(texcoords[key.texIndex].z);
+                data.push_back(texcoords[key.texIndex].w);
+                v.setData("texcoord", data);
+            }
+
+            if (key.normalIndex >= 0 && key.normalIndex < normals.size())
+            {
+                data.clear();
+                data.push_back(normals[key.normalIndex].x);
+                data.push_back(normals[key.normalIndex].y);
+                data.push_back(normals[key.normalIndex].z);
+                data.push_back(normals[key.normalIndex].w);
+                v.setData("normal", data);
+            }
 
             vertexData.push_back(v);
         }
 
-        if ((normals.size()==0) || (normals.size()!=vertices.size()))
+        if (normals.size() == 0)
             mesh.computeNormals();
 
         mesh.setVertexData(vertexData);
-        mesh.setPrimitives(triangles);
+        mesh.setPrimitives(remappedTriangles);
         mesh.setPrimitiveType(GL_TRIANGLES);
         mesh.setPrimitiveSize(3);
         return mesh;

@@ -2,10 +2,7 @@
 instance box models/box-outside-2.obj
 instance helmet models/helmet.obj
 instance monkey models/monkey.obj
-instance postProcess models/post-process.obj
-instance skybox models/skybox.obj
 instance sphere models/sphere-3.obj
-instance hdr-skybox models/hdr-skybox.obj
 
 
 # textures

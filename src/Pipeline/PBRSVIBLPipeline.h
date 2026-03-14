@@ -224,14 +224,6 @@ namespace pipeline
             return;
         }
         cout<<"Loading HDR cubemap"<<endl;
-        if (!hasObject("hdr-skybox")) {
-            cerr << "Warning: 'hdr-skybox' mesh not found, skipping HDR IBL setup." << endl;
-            return;
-        }
-        if (!hasObject("postProcess")) {
-            cerr << "Warning: 'postProcess' mesh not found, skipping HDR IBL setup (needed for BRDF LUT)." << endl;
-            return;
-        }
         hdrCubemap = true;
         // draw the cubemap and save to memory.
         glEnable(GL_DEPTH_TEST);
@@ -485,8 +477,7 @@ namespace pipeline
         glUniform1i(hdrSkyboxShaderLocations.getLocation("environmentMap"), 0);
         glDepthFunc(GL_LEQUAL);
         glDisable(GL_CULL_FACE);
-        if (hasObject("hdr-skybox"))
-            objects["hdr-skybox"]->draw();
+        objects["hdr-skybox"]->draw();
         hdrSkyboxShaderProgram.disable();
     }
 
@@ -555,10 +546,7 @@ namespace pipeline
         glUniform1f(hdrShaderLocations.getLocation("exposure"), exposure);
         // glDisable(GL_DEPTH_TEST); // not sure why this is needed?
         // draw screen space quad
-        if (hasObject("postProcess"))
-            objects["postProcess"]->draw();
-        else
-            cerr << "Warning: 'postProcess' mesh not found, skipping HDR tone-mapping pass." << endl;
+        objects["postProcess"]->draw();
         hdrShaderProgram.disable();
 
     }
