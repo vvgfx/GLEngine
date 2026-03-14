@@ -2,10 +2,10 @@
 
 // THIS IS FROM BEFORE THE PIPELINE CHANGE. IT'S NOT USED ANYWHERE AND DOES NOT WORK
 
-in vec4 vPosition;
-in vec4 vNormal;
-in vec4 vTexCoord;
-in vec4 vTangent;
+layout(location = 0) in vec4 vPosition;
+layout(location = 1) in vec4 vNormal;
+layout(location = 2) in vec4 vTexCoord;
+layout(location = 3) in vec4 vTangent;
 
 uniform mat4 projection;
 uniform mat4 modelview;
